@@ -1,0 +1,15 @@
+{
+  "short_name": "Fio do Dia",
+  "name": "Fio do Dia - Caderno de Produção",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#f2ede1",
+  "theme_color": "#534e96",
+  "display": "standalone"
+}
