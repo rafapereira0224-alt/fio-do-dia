@@ -1,6 +1,5 @@
 import { useEffect, useState, useRef } from "react";
 import "./App.css";
-import { Analytics } from "@vercel/analytics/react";
 
 const STORAGE_KEY = "costura-diaria:registros";
 const META_DIARIA_KEY = "costura-diaria:metaDiaria";
