@@ -4,6 +4,7 @@ import { VitePWA } from "vite-plugin-pwa";
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: "/fio-do-dia/", // Essencial para o GitHub Pages reconhecer os caminhos
   plugins: [
     react(),
     VitePWA({
@@ -23,8 +24,8 @@ export default defineConfig({
         theme_color: "#f4efe6",
         background_color: "#f4efe6",
         display: "standalone",
-        start_url: "/",
-        scope: "/",
+        start_url: "/fio-do-dia/",
+        scope: "/fio-do-dia/",
         icons: [
           {
             src: "/icon-192.png",
