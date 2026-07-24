@@ -5,6 +5,9 @@ import { Analytics } from "@vercel/analytics/react";
 const STORAGE_KEY = "costura-diaria:registros";
 const META_DIARIA_KEY = "costura-diaria:metaDiaria";
 const META_MENSAL_KEY = "costura-diaria:metaMensal";
+const CRONOMETRO_TEMPO_KEY = "costura-diaria:cronometroTempo";
+const CRONOMETRO_RODANDO_KEY = "costura-diaria:cronometroRodando";
+const CRONOMETRO_INICIO_KEY = "costura-diaria:cronometroInicio";
 
 function hoje() {
   const d = new Date();
@@ -44,8 +47,26 @@ export default function App() {
   const [metaMensal, setMetaMensal] = useState("2000");
   const [filtroMes, setFiltroMes] = useState("todos");
 
-  const [segundosTotais, setSegundosTotais] = useState(0);
-  const [rodandoCronometro, setRodandoCronometro] = useState(false);
+  // Recupera o estado inicial do cronômetro do localStorage de forma inteligente
+  const [segundosTotais, setSegundosTotais] = useState(() => {
+    const salvoTempo = localStorage.getItem(CRONOMETRO_TEMPO_KEY);
+    const salvoRodando =
+      localStorage.getItem(CRONOMETRO_RODANDO_KEY) === "true";
+    const salvoInicio = localStorage.getItem(CRONOMETRO_INICIO_KEY);
+
+    if (salvoRodando && salvoInicio) {
+      const segundosPassados = Math.floor(
+        (Date.now() - parseInt(salvoInicio, 10)) / 1000,
+      );
+      return (salvoTempo ? parseInt(salvoTempo, 10) : 0) + segundosPassados;
+    }
+    return salvoTempo ? parseInt(salvoTempo, 10) : 0;
+  });
+
+  const [rodandoCronometro, setRodandoCronometro] = useState(() => {
+    return localStorage.getItem(CRONOMETRO_RODANDO_KEY) === "true";
+  });
+
   const timerRef = useRef(null);
 
   useEffect(() => {
@@ -63,14 +84,28 @@ export default function App() {
     }
   }, []);
 
+  // Gerencia o intervalo do cronômetro e salva no localStorage a cada segundo
   useEffect(() => {
     if (rodandoCronometro) {
+      localStorage.setItem(CRONOMETRO_RODANDO_KEY, "true");
+      if (!localStorage.getItem(CRONOMETRO_INICIO_KEY)) {
+        localStorage.setItem(CRONOMETRO_INICIO_KEY, Date.now().toString());
+      }
+
       timerRef.current = setInterval(() => {
-        setSegundosTotais((prev) => prev + 1);
+        setSegundosTotais((prev) => {
+          const novoTempo = prev + 1;
+          localStorage.setItem(CRONOMETRO_TEMPO_KEY, novoTempo.toString());
+          return novoTempo;
+        });
       }, 1000);
     } else {
       clearInterval(timerRef.current);
+      localStorage.setItem(CRONOMETRO_RODANDO_KEY, "false");
+      localStorage.removeItem(CRONOMETRO_INICIO_KEY);
+      localStorage.setItem(CRONOMETRO_TEMPO_KEY, segundosTotais.toString());
     }
+
     return () => clearInterval(timerRef.current);
   }, [rodandoCronometro]);
 
@@ -81,6 +116,9 @@ export default function App() {
   function zerarCronometro() {
     setRodandoCronometro(false);
     setSegundosTotais(0);
+    localStorage.removeItem(CRONOMETRO_TEMPO_KEY);
+    localStorage.removeItem(CRONOMETRO_RODANDO_KEY);
+    localStorage.removeItem(CRONOMETRO_INICIO_KEY);
   }
 
   function usarTempoDoCronometro() {
@@ -680,6 +718,7 @@ export default function App() {
           neste computador
         </p>
       </main>
+      <Analytics />
     </div>
   );
 }
