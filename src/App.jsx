@@ -47,7 +47,6 @@ export default function App() {
   const [metaMensal, setMetaMensal] = useState("2000");
   const [filtroMes, setFiltroMes] = useState("todos");
 
-  // Recupera o estado inicial do cronômetro do localStorage de forma inteligente
   const [segundosTotais, setSegundosTotais] = useState(() => {
     const salvoTempo = localStorage.getItem(CRONOMETRO_TEMPO_KEY);
     const salvoRodando =
@@ -84,20 +83,31 @@ export default function App() {
     }
   }, []);
 
-  // Gerencia o intervalo do cronômetro e salva no localStorage a cada segundo
   useEffect(() => {
     if (rodandoCronometro) {
       localStorage.setItem(CRONOMETRO_RODANDO_KEY, "true");
-      if (!localStorage.getItem(CRONOMETRO_INICIO_KEY)) {
-        localStorage.setItem(CRONOMETRO_INICIO_KEY, Date.now().toString());
+      let inicio = localStorage.getItem(CRONOMETRO_INICIO_KEY);
+      const tempoSalvo = parseInt(
+        localStorage.getItem(CRONOMETRO_TEMPO_KEY) || "0",
+        10,
+      );
+
+      if (!inicio) {
+        const timestampInicioReal = Date.now() - tempoSalvo * 1000;
+        localStorage.setItem(
+          CRONOMETRO_INICIO_KEY,
+          timestampInicioReal.toString(),
+        );
+        inicio = timestampInicioReal.toString();
       }
 
       timerRef.current = setInterval(() => {
-        setSegundosTotais((prev) => {
-          const novoTempo = prev + 1;
-          localStorage.setItem(CRONOMETRO_TEMPO_KEY, novoTempo.toString());
-          return novoTempo;
-        });
+        const agora = Date.now();
+        const tempoDecorridoMs = agora - parseInt(inicio, 10);
+        const novosSegundos = Math.floor(tempoDecorridoMs / 1000);
+
+        setSegundosTotais(novosSegundos);
+        localStorage.setItem(CRONOMETRO_TEMPO_KEY, novosSegundos.toString());
       }, 1000);
     } else {
       clearInterval(timerRef.current);
